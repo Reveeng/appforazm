@@ -22,44 +22,48 @@ class MainWindow(QtWidgets.QMainWindow):
         self.files = []
         self.idTab = 0
         self.count = 0
-        self.x = 0
-        self.y = 0
         self.photoCount = 0
-        self.pathToFile = "C:\\razmdataset\\WebFaces_GroundThruth.txt"
+        self.pathToFile = "A:\\progrforrazm\\appforazm\\WebFaces_GroundThruth.txt"
         self.file = open(self.pathToFile,'w')
         self.img = pg.ImageItem()
-        self.hist = pg.HistogramLUTItem()   
         self.tab = QtWidgets.QTabWidget()
         self.setCentralWidget(self.tab)
         self.idTab = self.tab.addTab(GraphicsLayoutWidget(),'All graphics')
         self.tab.setCurrentIndex(self.idTab)
         self.p1 = self.tab.widget(self.idTab).addPlot(title = '')
-        self.photos = os.listdir("C:\\razmdataset")
+        self.photo_name = os.listdir("A:\\progrforrazm\\appforazm\\data")
+        for i in range(len(self.photo_name)):
+            self.files.append("A:\\progrforrazm\\appforazm\\data\\"+self.photo_name[i])
+            print(self.files[i])
         self.openImage()
+        
     def openImage(self):
-        pic = Image.open(self.photos[self.photoCount])
+        pic = Image.open(self.files[self.photoCount])
+        self.file.write(self.photo_name[self.photoCount]+' ')
         pix = np.array(pic)
         self.img.setImage(pix)
-        self.img.hoverEvent = self.imageHoverEvent
         self.img.mouseClickEvent = self.imageClickedEvent
         self.p1.addItem(self.img)
     
-    def imageHoverEvent(self,event):
-        pos = event.pos()
-        ppos = self.img.mapToParent(pos)
-        self.x, self.y = ppos.x(), ppos.y()
-        
     def imageClickedEvent(self, ev):
         if ev.button() == QtCore.Qt.LeftButton:
+            pos = ev.pos()
+            ppos = self.img.mapToParent(pos)
+            x, y = ppos.x(), ppos.y()
+            print(x,y)
             string = ''
-            string = string + str(round(self.x))+' '+str(round(self.y))
+            string = string + str(round(y))+' '+str(round(x))+' '
             self.file.write(string);
             self.count+=1
             if self.count == 4:
                 self.count = 0
                 self.photoCount+=1
-                self.openImage()
-            print(string)
+                if self.photoCount < len(self.files):
+                    self.file.write("\n")
+                    self.openImage()
+                else:
+                    print("end of files")
+                    self.file.close()
         
         
 app = QtWidgets.QApplication(sys.argv)
